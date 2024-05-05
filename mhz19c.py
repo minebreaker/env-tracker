@@ -4,6 +4,7 @@ from net import http_post
 import config as c
 from binascii import b2a_base64 as base64
 
+
 def read_co2():
   serial = UART(1, tx=21, rx=20, baudrate=9600, bits=8, parity=None, stop=1)
   res = serial.write(b"\xFF\x01\x86\x00\x00\x00\x00\x00\x79")

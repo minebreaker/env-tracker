@@ -2,6 +2,9 @@ from machine import Pin, I2C
 from time import sleep_ms
 from net import http_post
 
+import config as c
+from binascii import b2a_base64 as base64
+
 
 # BEM680 I2C addr
 DEV = 0x77
@@ -43,19 +46,23 @@ def read_tph():
 
   from binascii import b2a_base64 as base64
   print(f"i2c id:    {id}")
-  print(f"i2c id:    {id.hex()}")
-  print(f"i2c id:    {base64(id, False)}")
   print(f"par_t1:    {par_t1}")
-  print(f"par_t1:    {par_t1.hex()}")
   print(f"par_t2t3:  {par_t2t3}")
-  print(f"par_t2t3:  {par_t2t3.hex()}")
   print(f"par_p:     {par_p}")
-  print(f"par_p:     {par_p.hex()}")
   print(f"par_h:     {par_h}")
-  print(f"par_h:     {par_h.hex()}")
   print(f"temp_adc:  {temp_adc}")
-  print(f"temp_adc:  {temp_adc.hex()}")
   print(f"press_adc: {press_adc}")
-  print(f"press_adc: {press_adc.hex()}")
   print(f"hum_adc:   {hum_adc}")
-  print(f"hum_adc:   {hum_adc.hex()}")
+
+  body = {
+    "deviceId": c.DEVICE_ID,
+    "roomId": c.ROOM_ID,
+    "parT1": base64(par_t1, False),
+    "parT2T3": base64(par_t2t3, False),
+    "parP": base64(par_p, False),
+    "parH": base64(par_h, False),
+    "tempAdc": base64(temp_adc, False),
+    "pressAdc": base64(press_adc, False),
+    "humAdc": base64(hum_adc, False)
+  }
+  http_post("/log/bme680", body)

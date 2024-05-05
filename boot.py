@@ -1,3 +1,4 @@
+import sys
 from machine import Pin
 import time
 
@@ -12,25 +13,26 @@ def main():
 
     remote_log("INFO", f"starting up device ...\n{get_device_info()}")
 
-    mhz19c.read_co2()
-    bme680.read_tph()
-
-    ledPin = Pin(2, Pin.OUT)
     while True:
-      ledPin.on()
-      time.sleep(1)
-      ledPin.off()
-      time.sleep(1)
+      try:
+        bme680.read_tph()
+      except Exception as e:
+        handle_exception(e)
+      try:
+        mhz19c.read_co2()
+      except Exception as e:
+        handle_exception(e)
+
+      time.sleep(30)
 
   except Exception as e:
-    import sys
     try:
       sys.print_exception(e)
-      led_error()
       remote_log("ERROR", "uncaught error:\n" + str(e))
+      led_error()
     except Exception as e2:
-      print("exception during handling exception")
       try:
+        print("exception during handling exception")
         sys.print_exception(e2)
       finally:
         led_serious_error()
@@ -48,6 +50,25 @@ def get_device_info():
     sys.print_exception(e)
     return "failed to read"
 
+
+def handle_exception(e):
+  try:
+    sys.print_exception(e)
+    led_exception()
+  except Exception as e2:
+    print("exception during handling exception")
+    sys.print_exception(e2)
+
+
+def led_exception():
+  ledPin = Pin(2, Pin.OUT)
+  count = 2
+  while count > 0:
+    ledPin.on()
+    time.sleep_ms(1000)
+    ledPin.off()
+    time.sleep_ms(1000)
+    count -= 1
 
 def led_error():
   ledPin = Pin(2, Pin.OUT)
