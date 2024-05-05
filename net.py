@@ -14,19 +14,21 @@ def connect_wifi():
   print("network config: ", wlan.ifconfig())
 
 
-def http_post(body):
+def http_post(path, body):
 
   s = socket.socket()
   ai = socket.getaddrinfo(c.SERVER, c.PORT)
   addr = ai[0][-1]
   s.connect(addr)
 
-  msg = b"POST /logger HTTP/1.0\r\n" + \
+  body_str = json.dumps(body)
+  msg = b"POST " + path + " HTTP/1.0\r\n" + \
          "Content-Type: application/json\r\n" + \
-         "Content-Length: " + str(len(str(body))) + "\r\n" + \
+         "Content-Length: " + str(len(body_str)) + "\r\n" + \
          "\r\n" + \
-         body
+         body_str
 
+  print("http request: " + str(msg))
   a_len = len(msg)
   w_len = s.send(msg)
   if a_len != w_len:
@@ -46,8 +48,5 @@ def http_post(body):
 
 
 def remote_log(level, value):
-
   body = {"deviceId": c.DEVICE_ID, "level": level, "value": value}
-  body_str = json.dumps(body)
-  print("remote logging: " + body_str)
-  http_post(body_str)
+  http_post("/logger", body)
