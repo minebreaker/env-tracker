@@ -1,5 +1,5 @@
 import sys
-from machine import Pin
+from machine import Pin # type: ignore
 import time
 
 import mhz19c
@@ -39,7 +39,7 @@ def main():
 
 
 def get_device_info():
-  import machine
+  import machine # type: ignore
 
   try:
     freq = machine.freq()

@@ -1,4 +1,4 @@
-import network
+import network # type: ignore
 import config as c
 import socket
 import json

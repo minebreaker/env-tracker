@@ -1,5 +1,5 @@
 import time
-from machine import UART
+from machine import UART # type: ignore
 from net import http_post
 import config as c
 from binascii import b2a_base64 as base64

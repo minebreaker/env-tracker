@@ -1,4 +1,4 @@
-from machine import Pin, I2C
+from machine import Pin, I2C # type: ignore
 from time import sleep_ms
 from net import http_post
 
