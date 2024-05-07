@@ -4,7 +4,7 @@ import time
 
 import mhz19c
 import bme680
-from net import connect_wifi, remote_log
+from net import connect_wifi, remote_log, HttpError
 import config as c
 
 def main():
@@ -16,10 +16,14 @@ def main():
     while True:
       try:
         bme680.read_tph()
+      except HttpError as e:
+        handle_exception(e, True)
       except Exception as e:
         handle_exception(e)
       try:
         mhz19c.read_co2()
+      except HttpError as e:
+        handle_exception(e, True)
       except Exception as e:
         handle_exception(e)
 
@@ -51,9 +55,14 @@ def get_device_info():
     return "failed to read"
 
 
-def handle_exception(e):
+def handle_exception(e, remoteLog=False):
   try:
     sys.print_exception(e)
+    if remote_log:
+      try:
+        remote_log("WARN", "uncaught error:\n" + str(e))
+      finally:
+        pass
     led_exception()
   except Exception as e2:
     print("exception during handling exception")

@@ -40,11 +40,18 @@ def http_post(path, body):
   if res.startswith("HTTP/1.1 204"):
     pass
   elif res.startswith("HTTP/1.1 4"):
-    raise Exception("4xx client error", res)
+    raise ClientError("4xx client error", res)
   elif res.startswith("HTTP/1.1 5"):
-    raise Exception("5xx server error", res)
+    raise ServerError("5xx server error", res)
   else:
     raise Exception("unknown response", res)
+
+class HttpError(Exception):
+  pass
+class ClientError(HttpError):
+  pass
+class ServerError(HttpError):
+  pass
 
 
 def remote_log(level, value):
