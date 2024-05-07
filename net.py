@@ -14,13 +14,13 @@ def http_post(path, body):
   if res.status_code >= 200 and res.status_code < 300:
     pass
   elif res.status_code >= 300 and res.status_code < 400:
-    raise HTTPError("redirect response", res)
-  elif res.status_code >= 400 and res.statuscode < 500:
-    raise ClientError("4xx client error", res)
+    raise HTTPError("redirect response", res.text)
+  elif res.status_code >= 400 and res.status_code < 500:
+    raise ClientError("4xx client error", res.text)
   elif res.status_code >= 500 and res.status_code < 600:
-    raise ServerError("5xx server error", res)
+    raise ServerError("5xx server error", res.text)
   else:
-    raise HTTPError("unknown response", res)
+    raise HTTPError("unknown response", res.text)
 
 
 class HTTPError(Exception):

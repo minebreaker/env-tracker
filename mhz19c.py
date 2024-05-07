@@ -9,11 +9,11 @@ def read_co2():
   serial = UART(1, tx=21, rx=20, baudrate=9600, bits=8, parity=None, stop=1)
 
   done = False
-  retry_limit = 20
+  retry_limit = 100
   result = b""
   while not done:
     if retry_limit <= 0:
-      raise Exception("MHZ19C read retry limit exceecded. partial read: " + str(result))
+      raise Exception("MHZ19C read retry limit exceeded. partial read: " + str(result))
 
     # FIXME: should check written bytes
     res = serial.write(b"\xFF\x01\x86\x00\x00\x00\x00\x00\x79")
