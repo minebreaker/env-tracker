@@ -27,19 +27,20 @@ def read_tph():
   i2c.writeto_mem(DEV, 0x72, b"\x01") # set osrs_h x1
   i2c.writeto_mem(DEV, 0x74, ((0x01 << 5) | (0x01 << 2) | 0x01).to_bytes(1, "big")) # set osrs_t x1, osrs_p x2, force mode
 
-  limit = 100
   done = False
+  retry_limit = 100
   while not done:
+    if retry_limit <= 0:
+      raise Exception("BME680 read retry limit exceeded.")
     sleep_ms(10)
+
     state = int.from_bytes(i2c.readfrom_mem(DEV, 0x74, 1), "big") & 0x01
     print(f"mode: {state}")
     if state == 0:
       done = True
-    
-    limit -= 1
-    if limit <= 0:
-      raise Exception("BME680 read retry limit exceeded.")
-  
+
+    retry_limit -= 1
+
   temp_adc = i2c.readfrom_mem(DEV, 0x22, 3)
   press_adc = i2c.readfrom_mem(DEV, 0x1F, 3)
   hum_adc = i2c.readfrom_mem(DEV, 0x25, 2)

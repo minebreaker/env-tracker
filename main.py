@@ -36,11 +36,11 @@ def main():
 
 def handle_exception(e):
   try:
-    sys.print_exception(e)
     try:
       remote_log("WARN", "uncaught error in the exception handler:\n" + str(e))
     finally:
       pass
+    sys.print_exception(e)
     led_exception()
   except Exception as e2:
     print("exception during handling exception in the exception handler")
