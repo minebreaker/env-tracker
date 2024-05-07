@@ -1,95 +1,56 @@
 import sys
-from machine import Pin # type: ignore
-import time
+import machine # type: ignore
+import network # type: ignore
 
-import mhz19c
-import bme680
-from net import connect_wifi, remote_log, HttpError
 import config as c
+from led import led_booted, led_error, led_serious_error
+from net import remote_log, HTTPError
 
 def main():
+  
   try:
-    connect_wifi()
+    wlan = connect_wifi()
 
-    remote_log("INFO", f"starting up device ...\n{get_device_info()}")
-
-    while True:
-      try:
-        bme680.read_tph()
-      except HttpError as e:
-        handle_exception(e, True)
-      except Exception as e:
-        handle_exception(e)
-      try:
-        mhz19c.read_co2()
-      except HttpError as e:
-        handle_exception(e, True)
-      except Exception as e:
-        handle_exception(e)
-
-      time.sleep(30)
-
+    remote_log("INFO", f"starting up device ...\n{get_device_info(wlan)}")
+    led_booted()
   except Exception as e:
     try:
-      sys.print_exception(e)
-      remote_log("ERROR", "uncaught error:\n" + str(e))
+      remote_log("ERROR", "uncaught error during boot:\n" + str(e))
       led_error()
     except Exception as e2:
       try:
-        print("exception during handling exception")
+        print("exception during handling exception during boot")
         sys.print_exception(e2)
       finally:
         led_serious_error()
+    raise e
 
 
-def get_device_info():
-  import machine # type: ignore
+def connect_wifi():
+  wlan = network.WLAN(network.STA_IF)
+  wlan.active(True)
+  if not wlan.isconnected():
+    print("connecting to network...")
+    wlan.connect(c.WIFI_SSID, c.WIFI_PASSWORD)
+    while not wlan.isconnected():
+      pass
+  print("network config: ", wlan.ifconfig())
+  return wlan
 
+
+def get_device_info(wlan):
+  from binascii import hexlify
   try:
     freq = machine.freq()
-    unique_id = machine.unique_id()
-    return f"device_id: {c.DEVICE_ID}\nfrep: {freq}\nunique_id: {unique_id}"
+    unique_id = hexlify(machine.unique_id()).decode().upper()
+    mac = hexlify(wlan.config("mac")).decode().upper()
+    return f"device_id: {c.DEVICE_ID}\n" + \
+           f"frep:      {freq}\n" + \
+           f"unique_id: {unique_id}\n" + \
+           f"mac:       {mac}"
   except Exception as e:
     import sys
     sys.print_exception(e)
     return "failed to read"
-
-
-def handle_exception(e, remoteLog=False):
-  try:
-    sys.print_exception(e)
-    if remote_log:
-      try:
-        remote_log("WARN", "uncaught error:\n" + str(e))
-      finally:
-        pass
-    led_exception()
-  except Exception as e2:
-    print("exception during handling exception")
-    sys.print_exception(e2)
-
-
-def led_exception():
-  ledPin = Pin(2, Pin.OUT)
-  count = 2
-  while count > 0:
-    ledPin.on()
-    time.sleep_ms(1000)
-    ledPin.off()
-    time.sleep_ms(1000)
-    count -= 1
-
-def led_error():
-  ledPin = Pin(2, Pin.OUT)
-  ledPin.on()
-
-def led_serious_error():
-  ledPin = Pin(2, Pin.OUT)
-  while True:
-    ledPin.on()
-    time.sleep_ms(200)
-    ledPin.off()
-    time.sleep_ms(200)
-
 
 main()

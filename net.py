@@ -1,56 +1,33 @@
-import network # type: ignore
-import config as c
-import socket
-import json
+import requests # type: ignore
 
-def connect_wifi():
-  wlan = network.WLAN(network.STA_IF)
-  wlan.active(True)
-  if not wlan.isconnected():
-    print("connecting to network...")
-    wlan.connect(c.WIFI_SSID, c.WIFI_PASSWORD)
-    while not wlan.isconnected():
-      pass
-  print("network config: ", wlan.ifconfig())
+import config as c
 
 
 def http_post(path, body):
 
-  s = socket.socket()
-  ai = socket.getaddrinfo(c.SERVER, c.PORT)
-  addr = ai[0][-1]
-  s.connect(addr)
-
-  body_str = json.dumps(body)
-  msg = b"POST " + path + " HTTP/1.0\r\n" + \
-         "Content-Type: application/json\r\n" + \
-         "Content-Length: " + str(len(body_str)) + "\r\n" + \
-         "\r\n" + \
-         body_str
-
-  print("http request: " + str(msg))
-  a_len = len(msg)
-  w_len = s.send(msg)
-  if a_len != w_len:
-    raise Exception(f"written length does not match. probably the bug. actual: {a_len}, written: {w_len}")
-
-  res = s.read()
-  print("http response: " + str(res))
-
-  if res.startswith("HTTP/1.1 204"):
+  url = f"http://{c.SERVER}:{c.PORT}{path}"
+  print(f"http request: {url}\n{str(body)}")
+  res = requests.request("POST", url, json=body)
+  print(f"http response: {res.status_code}")
+  # micropython requests doesn't support `raise_for_status()`
+  # res.raise_for_status()
+  if res.status_code >= 200 and res.status_code < 300:
     pass
-  elif res.startswith("HTTP/1.1 4"):
+  elif res.status_code >= 300 and res.status_code < 400:
+    raise HTTPError("redirect response", res)
+  elif res.status_code >= 400 and res.statuscode < 500:
     raise ClientError("4xx client error", res)
-  elif res.startswith("HTTP/1.1 5"):
+  elif res.status_code >= 500 and res.status_code < 600:
     raise ServerError("5xx server error", res)
   else:
-    raise Exception("unknown response", res)
+    raise HTTPError("unknown response", res)
 
-class HttpError(Exception):
+
+class HTTPError(Exception):
   pass
-class ClientError(HttpError):
+class ClientError(HTTPError):
   pass
-class ServerError(HttpError):
+class ServerError(HTTPError):
   pass
 
 
