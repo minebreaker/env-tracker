@@ -1,12 +1,14 @@
 from time import sleep_ms
 from machine import UART # type: ignore
+
 from net import http_post
 import config as c
 from binascii import b2a_base64 as base64
+import pins
 
 
 def read_co2():
-  serial = UART(1, tx=21, rx=20, baudrate=9600, bits=8, parity=None, stop=1)
+  serial = UART(1, tx=pins.UART_TX, rx=pins.UART_RX, baudrate=9600, bits=8, parity=None, stop=1)
 
   done = False
   retry_limit = 100

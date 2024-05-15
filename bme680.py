@@ -1,17 +1,18 @@
 from machine import Pin, I2C # type: ignore
 from time import sleep_ms
-from net import http_post
-
-import config as c
 from binascii import b2a_base64 as base64
+
+from net import http_post
+import config as c
+import pins
 
 
 # BEM680 I2C addr
 DEV = 0x77
 
 def read_tph():
-  sda = Pin(6, Pin.PULL_UP)
-  scl = Pin(7, Pin.PULL_UP)
+  sda = Pin(pins.I2C_SDA, Pin.PULL_UP)
+  scl = Pin(pins.I2C_SCL, Pin.PULL_UP)
   i2c = I2C(0, sda = sda, scl = scl)
   # print("scan: " +  str(i2c.scan()))
 

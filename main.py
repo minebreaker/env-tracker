@@ -4,6 +4,7 @@ import sys
 from led import led_exception, led_error, led_serious_error
 import mhz19c
 import bme680
+import tgs8100
 from net import remote_log
 
 
@@ -16,6 +17,10 @@ def main():
         handle_exception(e)
       try:
         mhz19c.read_co2()
+      except Exception as e:
+        handle_exception(e)
+      try:
+        tgs8100.read()
       except Exception as e:
         handle_exception(e)
 

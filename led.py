@@ -1,9 +1,11 @@
 import time
 from machine import Pin # type: ignore
+import pins
 
+
+ledPin = Pin(pins.LED, Pin.OUT)
 
 def led_booted():
-  ledPin = Pin(2, Pin.OUT)
   count = 3
   while count > 0:
     ledPin.on()
@@ -14,7 +16,6 @@ def led_booted():
 
 
 def led_exception():
-  ledPin = Pin(2, Pin.OUT)
   count = 2
   while count > 0:
     ledPin.on()
@@ -24,11 +25,9 @@ def led_exception():
     count -= 1
 
 def led_error():
-  ledPin = Pin(2, Pin.OUT)
   ledPin.on()
 
 def led_serious_error():
-  ledPin = Pin(2, Pin.OUT)
   while True:
     ledPin.on()
     time.sleep_ms(200)
