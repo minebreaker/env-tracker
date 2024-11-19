@@ -27,6 +27,7 @@ def main():
 
 
 def connect_wifi():
+  network.hostname("esp32-env-tracker-" + c.DEVICE_ID)
   wlan = network.WLAN(network.STA_IF)
   wlan.active(True)
   if not wlan.isconnected():
